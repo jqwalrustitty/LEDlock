@@ -1,7 +1,3 @@
-% README
-% Rodger Allen
-% 2020
-
 # README
 
 A project to exfiltrate data from a Windows host to a Raspberry Pi Zero
@@ -44,8 +40,6 @@ Lesser priority:
 - Docs are CC BY-SA 4.0
 
 
-------
-
-```
+<!--
 # vi: et ts=2 ai
-```
+-->
