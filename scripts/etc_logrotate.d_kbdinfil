@@ -1,0 +1,29 @@
+/var/log/exfil.log
+/var/log/exfil-notice.log
+{
+	rotate 28
+	daily
+	missingok
+	notifempty
+	delaycompress
+	compress
+	postrotate
+		invoke-rc.d rsyslog rotate > /dev/null
+	endscript
+}
+
+#/var/exfil/debug.log
+#{
+#	rotate 7
+#	daily
+#	missingok
+#	notifempty
+#	delaycompress
+#	compress
+#	postrotate
+#		invoke-rc.d kbdinfil restart > /dev/null
+#	endscript
+#	create 644 root root
+#}
+
+# vi: noet ts=4 ai

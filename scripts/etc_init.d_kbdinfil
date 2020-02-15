@@ -1,0 +1,60 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:		kbdinfil
+# Required-Start:	$remote_fs
+# Required-Stop:	$remote_fs
+# Should-Start:		$network
+# Should-Stop:
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description:	LED covert exfiltration
+# Description:		Covert data exfiltration using keyboard LEDs
+#			- listening daemon
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+#DAEMON_SBIN=/home/pi/kbdexfil/kbdinfil
+DAEMON_SBIN=/usr/local/sbin/kbdinfil
+DAEMON_CONF=/dev/hidg0
+NAME=kbdinfil
+DESC="LED covert exfiltration"
+
+[ -x "$DAEMON_SBIN" ] || exit 0
+[ -n "$DAEMON_CONF" ] || exit 0
+
+#DAEMON_OPTS="-v $DAEMON_CONF"
+DAEMON_OPTS="$DAEMON_CONF"
+
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting $DESC" "$NAME"
+	start-stop-daemon --start --oknodo --quiet --exec "$DAEMON_SBIN" \
+	                -- $DAEMON_OPTS >/dev/null
+	log_end_msg "$?"
+	;;
+  stop)
+	log_daemon_msg "Stopping $DESC" "$NAME"
+	start-stop-daemon --stop --oknodo --quiet --exec "$DAEMON_SBIN"
+	log_end_msg "$?"
+	;;
+  restart|reload|force-reload)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+  status)
+	status_of_proc "$DAEMON_SBIN" "$NAME"
+	exit $?
+	;;
+  *)
+	N=/etc/init.d/$NAME
+	echo "Usage: $N {start|stop|restart|force-reload|reload|status}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
+# vi: et ts=4 ai
