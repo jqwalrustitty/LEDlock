@@ -7,8 +7,7 @@ emulating a USB keyboard, by flashing the LEDs.
 
 - src is in [src](src)
 - doc is in [doc](doc)
-- scripts are in [scripts](scripts)
-- not sure what's in [pi](pi)
+- scripts and configs are in [scripts](scripts)
 
 Start with the docs.
 
@@ -18,18 +17,21 @@ Start with the docs.
 - mingw32
 - pandoc (for the docs)
   - again, start with the docs
+  - unapologetically, pandoc markdown
 
 ## TODOs
 
 Higher priority:
-- streamline implant vs daemon dependencies
-- cleanup verbosity and debugging
-- file-less implant
 - error-correction and/or synchronous and/or race conditions
+- cq detection (cq0 and lastTrybble/INITSTATE)
+- cleanup verbosity and debugging
+- general bugfixes
 
 Lesser priority:
+- streamline implant vs daemon dependencies
+- daemon signal handling
+- file-less implant
 - remove IPv4 from Pi build (because!)
-- cq detection (cq0 and lastTrybble/INITSTATE)
 
 ## Licencing
 

