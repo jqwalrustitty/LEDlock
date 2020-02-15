@@ -82,7 +82,7 @@ void flashByte( trybble *st, int timer, uint8_t b )
 
 #if DEBUG
     if (verbose>=2) {
-        fprintf(stdout,">  %c  (%#x)\t", isprint(b)?b:'_', b);
+        fprintf(stdout,">  %c  (%#04x)\t", isprint(b)?b:'_', b);
         showTydbitsArr(q); fprintf(stdout,"  ");
     }
 #endif
