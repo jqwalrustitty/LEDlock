@@ -120,7 +120,7 @@ void showMetadata( metadata *md )
  */
 void showMetadataStr( char * str, int sz, metadata *md )
 {
-    snprintf(str,sz,"size:%u, crc:0x%#x",
+    snprintf(str,sz,"size:%u, crc:%#x",
             md->size, md->crc);
 }
 

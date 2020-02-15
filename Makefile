@@ -7,7 +7,7 @@
 #
 # ------------------------------------------------------------------------------
 
-REVISION=0.4.0
+REVISION=0.4.1
 
 .PHONY: kbdexfil kbdinfil doc clean
 all: kbdinfil kbdexfil doc
@@ -26,7 +26,7 @@ clean:
 	(cd doc/ && make clean)
 
 package:
-	darcs dist --dist-name nomicon-darcs-$(REVISION)
+	darcs dist --dist-name ledlock-darcs-$(REVISION)
 
 
 # ------------------------------------------------------------------------------
