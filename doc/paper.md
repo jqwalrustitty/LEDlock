@@ -23,6 +23,7 @@ source code can be used to build the *implant* that will go on the host
 As well as some other goodies, such as docs, config files and install
 scripts.
 
+------
 
 # Building the POC
 
@@ -185,7 +186,6 @@ booted.  Don't get them mixed up.
     - `/var/exfil/`
     - `/var/exfil/kbdinfil-debug.log`
 
-
 6.  [Building the Implant]{.smallcaps}
 
     The *Secret Sauce* to compiling the implant is `mingw32`, which will
@@ -273,30 +273,23 @@ that it has the full complement of lights, so will flash them invisibly.
 ```
 > kbdexfil.exe -vv -t 2 test.txt
 timer: 2
-filename:       test9.txt
-size:290, crc:0x578853d1
+filename:       test.txt
+size:5, crc:0xde35e8ec
    C  (0x43)    (1,0,0,3)  1 4 0 7
    Q  (0x51)    (1,1,0,1)  1 5 0 5
    C  (0x43)    (1,0,0,3)  1 4 0 7
    Q  (0x51)    (1,1,0,1)  1 5 0 5
-   "  (0x22)    (0,2,0,2)  0 6 0 6
-   _  (0x01)    (0,0,0,1)  0 4 0 5
-   _  (0xd1)    (3,1,0,1)  3 5 0 5
-   S  (0x53)    (1,1,0,3)  1 5 0 7
-   _  (0x88)    (2,0,2,0)  2 4 2 4
-   W  (0x57)    (1,1,1,3)  1 5 1 7
-   2  (0x32)    (0,3,0,2)  0 7 0 6
-   _  (0x0a)    (0,0,2,2)  0 4 2 6
-   S  (0x53)    (1,1,0,3)  1 5 0 7
-   a  (0x61)    (1,2,0,1)  1 6 0 5
-   t  (0x74)    (1,3,1,0)  1 7 1 4
-      (0x20)    (0,2,0,0)  0 6 0 4
-   F  (0x46)    (1,0,1,2)  1 4 1 6
-   e  (0x65)    (1,2,1,1)  1 6 1 5
-   b  (0x62)    (1,2,0,2)  1 6 0 6
-      (0x20)    (0,2,0,0)  0 6 0 4
-   1  (0x31)    (0,3,0,1)  0 7 0 5
-...
+   _  (0x05)    (0,0,1,1)  0 4 1 5
+   _  (0x00)    (0,0,0,0)  0 4 0 4
+   _  (0xec)    (3,2,3,0)  3 6 3 4
+   _  (0xe8)    (3,2,2,0)  3 6 2 4
+   5  (0x35)    (0,3,1,1)  0 7 1 5
+   _  (0xde)    (3,1,3,2)  3 5 3 6
+      (0x46)    (1,0,1,2)  1 4 1 6
+      (0x6e)    (1,2,3,2)  1 6 3 6
+      (0x6f)    (1,2,3,3)  1 6 3 7
+      (0x72)    (1,3,0,2)  1 7 0 6
+      (0x64)    (1,2,1,0)  1 6 1 4
 ```
 
 ## Running the Listener
@@ -369,7 +362,6 @@ a binary stream and could contain anything.
 | `1581753225`  | `0x644aa341`  | `34b` | `OK`    | `.bin`    |
 | `1581752912`  | `0x14238cd2`  | `34b` | `CRC`   | `.bin`    |
 
-
 ------
 
 # Some Theory
@@ -427,8 +419,8 @@ LEDs even when the bits to be sent have not changed.
 | `Q` or `0x51` |
 | `01000011`    |
 | `01 00 00 11` |
-Table: Encoding `CQ` as Tydbits
 
+Table: Encoding `CQ` as Tydbits
 
 | Trybble | Tydbits | Encoding  | Wire  |
 |:-------:|:-------:|:---------:|:-----:|
@@ -440,6 +432,7 @@ Table: Encoding `CQ` as Tydbits
 | `100`   | `01`    | `* o *`   | `5`   |
 | `000`   | `00`    | `o o o`   | `0`   |
 | `100`   | `01`    | `* o *`   | `5`   |
+
 Table: Encoding "CQ" as a sequence of flashes
 
 Since the alternating-trybble is being discarded, it doesn't matter for
@@ -455,6 +448,7 @@ the encoding which one it is, so long as they alternate.
 | `000`   | `01`    | `o o *`   | `1`   |
 | `100`   | `00`    | `* o o`   | `4`   |
 | `000`   | `01`    | `o o *`   | `1`   |
+
 Table: Encoding "CQ" as a sequence of flashes - different Trybblyes
 
 Decoding is just the same thing in reverse. Take four sequential sets of
@@ -492,7 +486,6 @@ to the implant.
 | CRC32   | 4     | `EC E8 35 DE`       | checksum of payload
 | Payload | 1-255 | ...                 | . . . . .
 
-
 | Trybbles                                  |
 |:------------------------------------------|
 | `1 4 0 7 1 5 0 5 1 4 0 7 1 5 0 5`         |
@@ -500,15 +493,7 @@ to the implant.
 | `3 6 3 4 3 6 2 4 0 7 1 5 3 5 3 6`         |
 | `1 4 1 6 1 6 3 6 1 6 3 7 1 7 0 6 1 6 1 4` |
 
-## Some Reference Data
-
-| KEY         | USB         | `keybd_event()`     |
-|-------------|-------------|---------------------|
-| NUM_LOCK    | 0x01 0b001  | `VK_NUMLOCK` - 0x90 |
-| CAPS_LOCK   | 0x02 0b010  | `VK_CAPITAL` - 0x14 |
-| SCROLL_LOCK | 0x04 0b100  | `VK_SCROLL` - 0x91  |
-
-## References
+## Some References
 
 - [Neal Stephenson, Cryptonomicon]()
 - [HID Usage Tables 1.12](https://usb.org/hid)
@@ -520,12 +505,18 @@ to the implant.
 - [Composite USB Gadgets on the Raspberry Pi Zero](https://www.isticktoit.net/?p=1383)
 - [Linux USB gadget configured through configfs](https://www.kernel.org/doc/Documentation/usb/gadget_configfs.txt)
 
+## Some Reference Data
+
+| KEY         | USB         | `keybd_event()`     |
+|-------------|-------------|---------------------|
+| NUM_LOCK    | 0x01 0b001  | `VK_NUMLOCK` - 0x90 |
+| CAPS_LOCK   | 0x02 0b010  | `VK_CAPITAL` - 0x14 |
+| SCROLL_LOCK | 0x04 0b100  | `VK_SCROLL` - 0x91  |
 
 <!--
 # File        : doc/paper.md
 # Copyright   : (c) Rodger Allen 2020
 # Licence     : CC BY-SA (2020)
-
 # ------------------------------------------------------------------------------
 # vi: et ts=2 ai tw=72
 -->

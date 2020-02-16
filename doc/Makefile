@@ -24,10 +24,8 @@ A4=-V papersize:a4
 
 # --------------------------------------
 
-all: slides paper.pdf
+all: paper.pdf slides
 	@echo
-
-etal: speaker.pdf morse
 
 clean:
 	rm -f *.pdf 2>/dev/null
@@ -36,8 +34,8 @@ clean:
 
 # --------------------------------------
 
-.PHONY=slides
-slides: slides.pdf
+.PHONY: slides
+slides: slides.pdf speaker.pdf morse
 slides.pdf: slides.md
 	pandoc -s $(BEAMEROPTS) -o $@ $<
 

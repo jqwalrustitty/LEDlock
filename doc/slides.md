@@ -43,7 +43,6 @@
 3.  **Better *protocol* than Morse**
 4.  **Device to emulate USB keyboard**
 
-
 ## The More Sensible Abstract
 
 In principle, the LEDs on a keyboard can be manipulated in such a manner
@@ -452,8 +451,6 @@ rolls the carpet to the left and generates negative values.
 
 # The End
 
-
-
 ## The Coda {.allowframebreaks}
 
 Title
@@ -476,11 +473,6 @@ Thanks
 
 : DS & SH & CH
 
-<!--
-```
-=========1=========2=========3=========4=========5======
-```
--->
 
 ![](images/keyboard-assembly.jpg)
 
@@ -496,7 +488,7 @@ Thanks
 [^arxiv-mice]: https://arxiv.org/abs/1911.01349
 [^ctrl-alt-led]: https://arxiv.org/abs/1907.05851
 
-<!-- =============================================================== -->
+<!-- *************************************************************** -->
 <!--
 ## The Junk at the end of the draft that needs deleting
 
@@ -505,30 +497,8 @@ Thanks
 =========1 -V aspectratio:54 3=========4=========5======X
 =========1 -V aspectratio:43 3=========4=========5=======X
 =========1 -V aspectratio:141 =========4=========5=========6=====X
-
-pandoc -s -t beamer \
-    -V theme:Szeged \
-    -V colortheme:crane \
-    -V fonttheme:structurebold \
-    -V aspectratio:43 \
-    -o slides.pdf slides.md
 ```
 ->
-<!-- *************************************************************** -->
-<!--
--->
-<!--
-```
-            __________________________________
-   NUM ____/
-                               _______________
-  CAPS _______________________/
-                ______            ______
-SCROLL ________/      \__________/      \_____
-
-                  01                11
-```
--->
 <!-- *************************************************************** -->
 <!--
 vi: et ts=2 ai ts=72
