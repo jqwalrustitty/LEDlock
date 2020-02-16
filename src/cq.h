@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/cq.h
  * Description  : Detect "CQ" from stream of Trybbles
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #ifndef __CQ_H_
@@ -16,7 +14,6 @@
 /* -------------------------------------
  * 
  */
-
 #define CQSIZE (MAGSZ * TYDS)
 
 uint8_t decodeChunk( FILE *fh );

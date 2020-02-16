@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/encoder.h
  * Description  : Encoding Trybbles
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #ifndef __ENCODER_H__
@@ -21,14 +19,12 @@
  *  A 'trybble' is three-bits
  *  Trybbles are also used to store the 'state' of the LEDs
  */
-
 typedef uint8_t tydbit;
 typedef uint8_t trybble;
 
 /* -------------------------------------
  * TYDBITS
  */
-
 #define TYDS 4
 
 // big-endian
@@ -50,7 +46,6 @@ typedef uint8_t trybble;
 /* -------------------------------------
  * TRYBBLES
  */
-
 // The mask as they appear in HID standard
 #define __NUMLOCK__         0x01
 #define __CAPITAL__         0x02
@@ -76,7 +71,6 @@ tydbit *    toTydbits( uint8_t z );
 
 tydbit  trybbleToTydbit( trybble t );
 trybble tydbitToTrybble( tydbit tyd, trybble tryb );
-
 
 /* -------------------------------------
  * DEBUGGING

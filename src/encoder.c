@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/encoder.c
  * Description  : Encoding Trybbles
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #include "encoder.h"
@@ -66,7 +64,6 @@ trybble tydbitToTrybble( tydbit tyd, trybble tryb)
 {
     return tydbitToTrybbleM(tyd,tryb);
 }
-
 
 /* -----------------------------------------------------------------------------
  *  Debugging

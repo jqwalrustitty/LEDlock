@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/winkbd.c
  * Description  : Windows Keyboard Routines
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #include <windows.h>
@@ -14,7 +12,6 @@
 
 #include "winkbd.h"
 #include "encoder.h"
-
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -138,7 +135,6 @@ trybble clearKeys( trybble st )
     return res;
 }
 #endif
-
 
 /* -------------------------------------
  * Sleep for a bit

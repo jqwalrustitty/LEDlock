@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : winkbd.h
  * Description  : Windows Keyboard Routines
  * Copyright	: (c) Rodger Allen 2019
  * Licence		: BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #ifndef __WINKBD_H__

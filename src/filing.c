@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/filing.c
  * Description  : File Operations for Daemon
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #include <stdio.h>          // FILE, fread()

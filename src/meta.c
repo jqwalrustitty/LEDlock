@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/meta.c
  * Description  : Protocol Metadata
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #include <stdio.h>          // FILE, fopen(), fclose(), fread(), ...
@@ -24,7 +22,7 @@ uint8_t magix[] = { 'C', 'Q', 'C', 'Q' };
  */
 
 /* -------------------------------------
- *
+ *  Size of the metadata header
  */
 int metaSize( struct metadata *md )
 {
@@ -32,7 +30,8 @@ int metaSize( struct metadata *md )
 }
 
 /* -------------------------------------
- *
+ * convert metadata struct to string of bytes
+ * returns number of bytes
  */
 int metaToBytes( uint8_t **buf, struct metadata *md )
 {
@@ -44,7 +43,7 @@ int metaToBytes( uint8_t **buf, struct metadata *md )
 }
 
 /* -------------------------------------
- *
+ * convert string of bytes to a metadata struct
  */
 struct metadata bytesToMeta( uint8_t *buf )
 {
@@ -60,7 +59,10 @@ struct metadata bytesToMeta( uint8_t *buf )
  */
 
 /* -------------------------------------
- *
+ * Read a file and create metadata
+ *  'filename'  : file
+ *  'buf'       : ptr to buffer of file payload 
+ *  returns     : metadat of file
  */
 struct metadata getFile( const char *filename, uint8_t **buf )
 {
@@ -82,7 +84,6 @@ struct metadata getFile( const char *filename, uint8_t **buf )
     fclose(fh);
     return md;
 }
-
 
 /* -------------------------------------------------------------------------- */
 #if DEBUG

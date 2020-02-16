@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/kbdinfil.c
  * Description  : Daemon Listener
  * Copyright	: (c) Rodger Allen 2019
  * Licence		: BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #ifndef LISTENER
@@ -51,7 +49,6 @@ void goDark();
 
 unsigned char * getPayload( FILE *fh, int fileSize );
 int check_dir( const char *path );
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -106,7 +103,6 @@ int check_dir( const char *path )
     //syslog(LOG_LOCAL7|LOG_INFO,"Using output dir %s", path);
     return 0;
 }
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -338,11 +334,8 @@ int main( int argc, char* argv[] )
 
     // -----------------
     // Open device
-    // The idea of the while+delay is because gadgetfs might
-    // not yet have started the 'hidg?' device
-    // Usually gets it on the 2nd attempt
-    // May as well just loop until it gets the filehandle
-    // TODO: tweak the '#defines'
+    // Device may not be immediately available on boot
+    // TODO: tweak the '#defines'; or just never stop?
 #define RETRIES 100
 #define TIMEOUT 5
     hid = fopen(devicename, "rb");
@@ -387,7 +380,6 @@ int main( int argc, char* argv[] )
     if (hid != NULL) fclose(hid);
     exit(EXIT_SUCCESS);
 }
-
 
 // -----------------------------------------------------------------------------
 // vi: et ts=4 ai

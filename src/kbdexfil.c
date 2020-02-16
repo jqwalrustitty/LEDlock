@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/kbdexfil.c
  * Description  : Windows implant
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #ifndef IMPLANT
@@ -34,7 +32,6 @@ int main(int argc, char* argv[]);
 int verbose = 0;
 int debug = 0;
 uint8_t lastTrybble = INITSTATE;;
-
 
 /* -------------------------------------------------------------------------- */
 

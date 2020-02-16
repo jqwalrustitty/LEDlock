@@ -1,11 +1,9 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/global.h
  * Description  : Global variables and hardcoded whatnots
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- */
-// -----------------------------------------------------------------------------
+ * -------------------------------------------------------------------------- */
 
 #ifndef __GLOBALS_H__
 #define __GLOBALS_H__
@@ -13,7 +11,6 @@
 // most of the printf()s are for "verbose"
 //#include <stdio.h>          // printf()
 #include <inttypes.h>
-
 
 // -------------------------------------
 // Versioning
@@ -56,7 +53,6 @@ extern int verbose;
 // last seen trybble (the __SCROLL__ bit)
 extern uint8_t lastTrybble;
 
-
 // -------------------------------------
 // Values from standard sources
 /*
@@ -74,7 +70,6 @@ Usage ID    Usage ID    Usage Name
 #define __VK_NUMLOCK__      0x90
 #define __VK_CAPITAL__      0x14
 #define __USB_SCROLL__      0x91
-
 
 // -------------------------------------
 // Junk

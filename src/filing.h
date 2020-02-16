@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/filing.h
  * Description  : File Operations for Daemon
  * Copyright    : (c) Rodger Allen 2019-2020
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #ifndef __FILING_H_
@@ -16,7 +14,6 @@
 /* -------------------------------------
  *  Flags for 'writeContents()'
  */
-
 #define FLAGNONE     0x00
 #define FLAGCRC      0x01
 #define FLAGMETA     0x02
@@ -24,7 +21,6 @@
 /* -------------------------------------
  *
  */
-
 int writeContents( struct metadata md, unsigned char *buf, char *path, int flags );
 
 char * newFileName( char *pathname, char *filename, char *stamps );

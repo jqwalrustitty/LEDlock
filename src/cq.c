@@ -1,10 +1,8 @@
 /* -----------------------------------------------------------------------------
- *
  * File         : src/cq.c
  * Description  : Detect "CQ" from stream of Trybbles
  * Copyright    : (c) Rodger Allen 2019
  * Licence      : BSD3
- *
  * -------------------------------------------------------------------------- */
 
 #include "cq.h"
@@ -16,7 +14,6 @@
 #include <string.h>         // strlen()
 
 #include <ctype.h>          // isprint()
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -132,7 +129,6 @@ int waitForCQ( FILE *fh )
     return 0;
 }
 
-
 /* -------------------------------------
  * Display the CQ buffer
  */
@@ -175,7 +171,6 @@ int * cqSignature( const char *buf )
     return(out);
 }
 #endif
-
 
 // -----------------------------------------------------------------------------
 // vi: et ts=4 ai
