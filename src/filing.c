@@ -81,16 +81,16 @@ char * epochStamp( )
     return stamp;
 }
 
+#define FMT16 "%#06x"
+#define FMT32 "%#010x"
 char * crcStamp( struct metadata md )
 {
-    char *fmt32 = "%#010x";
-    char *fmt16 = "%#06x";
     int len = 2 + 2*sizeof(md.crc) + 1;
     char *stamp = malloc(len+1);
 
     if (sizeof(md.crc)==sizeof(uint16_t))
-        snprintf(stamp, len, fmt16, md.crc);
-    else snprintf(stamp, len, fmt32, md.crc);
+        snprintf(stamp, len, FMT16, md.crc);
+    else snprintf(stamp, len, FMT32, md.crc);
     return stamp;
 }
 
