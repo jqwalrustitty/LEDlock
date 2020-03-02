@@ -17,70 +17,104 @@
  *  TYPES
  *  A 'tydbits' is two-bits
  *  A 'trybble' is three-bits
- *  Trybbles are also used to store the 'state' of the LEDs
  */
-typedef uint8_t tydbit;
+typedef uint8_t ledstate;
 typedef uint8_t trybble;
-
-/* -------------------------------------
- * TYDBITS
- */
-#define TYDS 4
-
-// big-endian
-#define TYDBIT(b,x) ((b & ((1<<(2*(3-x)+1)) + (1<<(2*(3-x))))) >> (2*(3-x)))
-#define _HI_        0
-#define _HIMID_     1
-#define _LOWMID_    2
-#define _LOW_       3
-
-#if 0
-// little-endian
-#define TYDBIT(b,x) ((b & ((1<<(2*x+1)) + (1<<(2*x)))) >> (2*x))
-#define _HI_        3
-#define _HIMID_     2
-#define _LOWMID_    1
-#define _LOW_       0
-#endif
+typedef uint8_t tydbit;
+typedef uint8_t unibit;
 
 /* -------------------------------------
  * TRYBBLES
+ * TODO: cleanup
  */
-// The mask as they appear in HID standard
-#define __NUMLOCK__         0x01
-#define __CAPITAL__         0x02
-#define __SCROLL__          0x04
-#define __LOCKKEYS__        (__SCROLL__^__CAPITAL__^__NUMLOCK__)
-#define __TYDMASK__         (__CAPITAL__^__NUMLOCK__)
+// The masks as they appear in HID standard
+#define NUMLOCK         0x01    // (1<<0)
+#define CAPITAL         0x02    // (1<<1)
+#define SCROLL          0x04    // (1<<2)
+#define _COMPOSE_       0x08    // (1<<3)
+#define KANA            0x10    // (1<<4)
+#define _POWER_         0x20    // (1<<5)
+#define _SHIFT_         0x40    // (1<<6)
+#define _DO_NOT_DISTURB_    0x80    // (1<<7)
 
-// Initialise LEDs to this state
-#define INITSTATE __SCROLL__
+#define LOCKKEYS        (SCROLL^CAPITAL^NUMLOCK)
+#define TYDMASK         (CAPITAL^NUMLOCK)
 
-#if 0
-#define __MASK_SCROLL__     (__LOCKKEYS__ ^ __SCROLL__)
-#define __MASK_CAPITAL__    (__LOCKKEYS__ ^ __CAPITAL__)
-#define __MASK_NUMLOCK__    (__LOCKKEYS__ ^ __NUMLOCK__)
-#define __MASK__            __MASK_SCROLL_
-#endif
+#define KLOCKKEYS       (KANA^SCROLL^CAPITAL^NUMLOCK)
+#define TRYBMASK        (SCROLL^CAPITAL^NUMLOCK)
+
+#define ULOCKKEYS       (KANA^SCROLL)
+#define UBITMASK        (KANA)
+
+// The alternating bit
+// XXX: KANA would be preferable, but doesn't seem to force the change
+#define PARITY SCROLL
 
 /* -------------------------------------
- *  CONVERSION ROUTINES
+ * Tydbits-per-byte and Trybbles-per-byte
  */
-uint8_t     fromTydbits( tydbit z[TYDS] );
-tydbit *    toTydbits( uint8_t z );
-
-tydbit  trybbleToTydbit( trybble t );
-trybble tydbitToTrybble( tydbit tyd, trybble tryb );
+#define TYDS  4
+#define TRYBS 3
+#define UBITS 8
 
 /* -------------------------------------
- * DEBUGGING
+ *  SHOW LEDSTATE
  */
-#if DEBUG
-#ifdef IMPLANT
-void showTydbitsArr( unsigned char z[4] );
-#endif
-char * showLEDstate( trybble t );
-#endif
+char *      showLEDs( ledstate st );
+char *      showLEDtyd( ledstate t );
+
+/* -------------------------------------
+ * TYDBITS PLUS SCROLL (ORIGINAL ENCODING)
+ */
+uint8_t     byteFromTydbits( tydbit z[TYDS] );
+tydbit *    byteToTydbits( uint8_t z );
+
+tydbit      stateToTydbit( ledstate st );
+trybble     stateFromTydbit( tydbit tyd, ledstate st );
+
+void        showTydbitArr( tydbit z[TYDS] );
+
+/* -------------------------------------
+ *  KANA PLUS TYDBITS PLUS SCROLL
+ */
+uint8_t     byteFromTrybbles( trybble z[TRYBS] );
+trybble *   byteToTrybbles( uint8_t z );
+
+trybble     stateToTrybble( ledstate st );
+ledstate    stateFromTrybble( trybble t, ledstate st );
+
+void        showTrybbleArr( unsigned char z[TRYBS] );
+
+/* -------------------------------------
+ *  KANA PLUS SCROLL
+ */
+
+uint8_t     byteFromUbits( unibit z[UBITS] );
+unibit *    byteToUbits( uint8_t z );
+
+unibit      stateToUbit( ledstate st );
+ledstate    stateFromUbit( unibit t, ledstate st );
+
+void        showUbitArr( unibit z[UBITS] );
+
+/* -------------------------------------
+ *  CALLBACKS
+ */
+//typedef uint8_t (*callback)(uint8_t, uint8_t);
+typedef struct encoder {
+    uint8_t   frames;
+    uint8_t   mask;
+    uint8_t * (*byteTo)   (uint8_t);
+    uint8_t   (*byteFrom) (uint8_t *);
+    uint8_t   (*stateTo)  (uint8_t);
+    uint8_t   (*stateFrom)(uint8_t, uint8_t);
+    void      (*showArr)  (uint8_t *);  
+} encoder;
+
+encoder unibitEncoder;
+encoder tydbitEncoder;
+encoder trybbleEncoder;
+encoder nullEncoder;
 
 #endif
 // -----------------------------------------------------------------------------
