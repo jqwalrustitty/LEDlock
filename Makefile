@@ -4,7 +4,7 @@
 # Licence 	: BSD3
 # ------------------------------------------------------------------------------
 
-REVISION=0.4.1
+REVISION=0.4.8
 
 .PHONY: kbdexfil kbdinfil doc clean
 all: kbdinfil kbdexfil doc
