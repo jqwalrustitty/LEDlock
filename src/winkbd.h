@@ -25,24 +25,33 @@
 #ifndef VK_SCROLL
 #define VK_SCROLL       0x91
 #endif
+#ifndef VK_KANA
+#define VK_KANA         0x15
+#endif
 
 // -------------------------------------
 
 void sleeper( int timer );
-trybble getKeyState();
-trybble setKeys( trybble oldState, trybble newState );
+void pressRelease( int key );
+ledstate getKeyState();
+ledstate setKeys( ledstate oldState, ledstate newState );
 
-void flashBytes( trybble *currState, int timer, uint8_t *bs, int sz );
-void flashByte ( trybble *currState, int timer, uint8_t b );
+void flashBytes( ledstate *st, int timer, unsigned char *bs, int sz, encoder enc );
+void flashByte( ledstate *st, int timer, uint8_t b, encoder enc );
 
-//trybble clearKeys( trybble st );
+ledstate sendInit( ledstate currState, int timer, encoder enc );
+
+#if DEBUG
+void FauxGetKeyboardState( unsigned char *buf );
+#endif
+
+void resetLEDs();
 
 // -------------------------------------
 #if 0
 // holdover from <windows.h>
 typedef unsigned char BYTE, *PBYTE, *LPBYTE
 typedef unsigned char UINT8;
-
 typedef int BOOL;
 #ifndef FALSE
 #define FALSE   0
