@@ -12,24 +12,21 @@
 #include "global.h"
 
 /* -------------------------------------
- *  Flags for 'writeContents()'
+ *  FILE UTILITIES
  */
-#define FLAGNONE     0x00
-#define FLAGCRC      0x01
-#define FLAGMETA     0x02
+int writeContents( struct metadata md, uint8_t *buf, char *fname );
+int check_dir( const char *path );
+void showFileData( uint8_t *buf, int size );
 
 /* -------------------------------------
- *
+ *  FILENAME GENERATION
  */
-int writeContents( struct metadata md, unsigned char *buf, char *path, int flags );
-
-char * newFileName( char *pathname, char *filename, char *stamps );
-char * mkStamp( struct metadata md );
+char * newFileName( const char *pathname, char *filename );
+char * mkStamp( struct metadata md, char *extras, char *ext );
 char * crcStamp( struct metadata md );
 char * sizeStamp( struct metadata md );
 char * epochStamp( );
 
-void showFileData( unsigned char *buf, int size );
 
 #endif
 // -----------------------------------------------------------------------------
