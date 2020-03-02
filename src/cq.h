@@ -5,28 +5,38 @@
  * Licence      : BSD3
  * -------------------------------------------------------------------------- */
 
-#ifndef __CQ_H_
-#define __CQ_H_
+#ifndef __CQ_H__
+#define __CQ_H__
 
 #include "global.h"
+#include "encoder.h"    // TYDS, TRYBS
 #include <stdio.h>      // FILE
 
 /* -------------------------------------
- * 
+ * DECODER
  */
-#define CQSIZE (MAGSZ * TYDS)
+uint8_t decodeChunkEnc( FILE *fh, encoder enc );
+uint8_t * getPayload( FILE *fh, int fileSize, encoder enc );
 
-uint8_t decodeChunk( FILE *fh );
+/* -------------------------------------
+ * DETECT ENCODING
+ */
+int waitForEncoding( FILE *fh, encoder *enc );
+uint8_t detectEncoding( uint8_t *buf, int sz );
+void pushBuf( uint8_t *buf, int sz, uint8_t b );
+void showEncBuf( uint8_t *buf, int size );
 
-int waitForCQ( FILE *fh );
-int eqCQ( uint8_t *buf );
-void pushCQ( uint8_t *buf, uint8_t b );
+/* -------------------------------------
+ * CQ SANITY
+ */
+int cqSanity( FILE *hid, encoder enc );
+int eqBuf( uint8_t *a, uint8_t *b, int sz );
 
-void showCQbuf( uint8_t *buf );
+/* -------------------------------------
+ * LEGACY cq signature array generation
+ */
+uint8_t * cqSignature( const char *buf, encoder enc );
 
-#if DEBUG
-int * cqSignature( const char *buf);
-#endif
 
 #endif
 // -----------------------------------------------------------------------------
