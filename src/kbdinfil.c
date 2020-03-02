@@ -18,20 +18,20 @@
 #include <unistd.h>         // getopt(), dup2()
 #include <syslog.h>         // syslog()
 #include <errno.h>          // errno, strerror()
-#include <sys/stat.h>       // stat()
+#include <sys/stat.h>       // umask()
 #include <fcntl.h>          // open()
 #include <sys/time.h>       // gettimeofday(), timersub()
 
 #include "global.h"
-#include "encoder.h"        // INITSTATE
-#include "meta.h"           // struct metadata, bytesToMeta(), metaSize()
-#include "crc32.h"          // rc_crc32()
-#include "cq.h"             // waitForCQ(), decodeChunk()
-#include "filing.h"         // writeContents(), showFileData()
+#include "encoder.h"
+#include "meta.h"
+#include "crc32.h"
+#include "cq.h"
+#include "filing.h"
 
 /* ---------------------------------- */
 
-uint8_t lastTrybble;
+uint8_t parity;
 
 int verbose = 0;
 int foreground = 0;
@@ -42,132 +42,78 @@ int run_once = 0;
 /* ---------------------------------- */
 
 int main( int argc, char* argv[] );
-void usage( char* progname );
-
-void loop( FILE *hid, char *outdir );
+void usage( const char* progname );
 void goDark();
-
-unsigned char * getPayload( FILE *fh, int fileSize );
-int check_dir( const char *path );
-
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------
- * Receive and decode the file contents
- */
-unsigned char * getPayload( FILE *fh, int fileSize )
-{
-    unsigned char *buf;
-    buf = malloc(fileSize);
-    for (int j=0 ; j < fileSize ; j++) {
-        buf[j] = decodeChunk(fh);
-        if (verbose>=2) printf(" %#04x %c\n",buf[j],isprint(buf[j])?buf[j]:'_');
-    }
-    return buf;
-}
-
-/* -------------------------------------
- * Check output directory exists
- *  - create if not?
- *  return: 0 on success
- */
-#ifndef CREATEDIR
-#define CREATEDIR 0
-#endif
-int check_dir( const char *path )
-{
-    struct stat sb;
-    int rv;
-
-    //return stat(path, &sb) == 0 && S_ISDIR(sb.st_mode);
-
-    rv = stat(path, &sb);
-    if (rv != 0) {
-        syslog(LOG_LOCAL7|LOG_ERR,"Cannot stat directory %s : %s", path, STRERR);
-        return rv;
-    }
-    if (S_ISDIR(sb.st_mode) != 1) {
-        syslog(LOG_LOCAL7|LOG_ERR,"Invalid output directory %s", path);
-        return 1;
-    }
-
-#if CREATEDIR
-    // create directory (needs to go into the rv check from stat()
-    rv = mkdir(path, 0x755);
-    if (rv != 0) {
-        syslog(LOG_LOCAL7|LOG_ERR,"Error creating output dir %s : %s", path, STRERR);
-        syslog(LOG_LOCAL7|LOG_ERR,"    rv=%d, errno=%d", rv, errno);
-        return errno;
-    }
-#endif
-    //syslog(LOG_LOCAL7|LOG_INFO,"Using output dir %s", path);
-    return 0;
-}
+void loop( FILE *hid, const char *outdir );
 
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------
  * Process a single incoming frame
  */
-void loop( FILE *hid, char *outdir )
+void loop( FILE *hid, const char *outdir )
 {
     struct metadata md;
     uint8_t *metaBuf;
     uint8_t *fileBuf;
     uint32_t crc = 0;
     struct timeval ustart, uend, udiff;
+    encoder enc = trybbleEncoder;
+    int ok = 0;
 
     /* Wait for a new transmission */
-    syslog(LOG_LOCAL7|LOG_INFO,"Awaiting new transmission");
-    lastTrybble = INITSTATE;
-    waitForCQ(hid);
+    //syslog(LOG_LOCAL7|LOG_DEBUG,"Awaiting new transmission");
+    parity = PARITY;
+    while (!ok) {
+        if (!waitForEncoding(hid,&enc)) continue;
+        if (verbose) fprintf(stdout,"\n === got enc %#04x ===\n",(enc.mask));
+        ok = cqSanity(hid, enc);
+        if(verbose>=4 && !ok) fprintf(stdout,"Failed CQ for enc=%s",showLEDs(enc.mask));
+        //syslog(LOG_LOCAL7|LOG_DEBUG,"Failed CQ for enc=%s",showLEDs(enc.mask));
+    }
     if (verbose) fprintf(stdout,"\n === RECEIVING ===\n");
-    syslog(LOG_LOCAL7|LOG_INFO,"  Received CQ");
+    //syslog(LOG_LOCAL7|LOG_DEBUG,"  Received CQ");
 
     /* Process metadata */
-    metaBuf = getPayload(hid,metaSize(&md));
+    metaBuf = getPayload(hid, metaSize(&md), enc);
     md = bytesToMeta(metaBuf);
     free(metaBuf);
-
-    if (verbose) fprintf(stdout,"INFO: size=%d+%d  crc=%#x\n",
-                                metaSize(&md), md.size, md.crc);
-    syslog(LOG_LOCAL7|LOG_INFO,"  size=%d+%d  crc=0x%x",
-                                metaSize(&md), md.size, md.crc);
-#if DEBUG
-    if (! metaSanity(&md)) {
-        char mdStr[512] = {0};
-        showMetadataStr(mdStr, 512, &md);
-        fprintf(stderr, "WARN: Metadata error: [%s]",mdStr);
-        syslog(LOG_LOCAL7|LOG_WARNING,"  > Metadata error: [%s]",mdStr);
+    if (! metaSanity(&md,&enc)) {
+        fprintf(stderr, "WARN: Metadata error: %s\n",showMetaData(&md));
+        syslog(LOG_LOCAL7|LOG_WARNING," Metadata error: %s", showMetaData(&md));
         return;
     }
-#endif
+    if (verbose) fprintf(stdout,"INFO: %s\n", showMetaData(&md));
+    syslog(LOG_LOCAL7|LOG_INFO,"< %s", showMetaData(&md));
 
     /* Get contents of file */
     gettimeofday(&ustart,NULL);
-    fileBuf = getPayload(hid, md.size);
+    fileBuf = getPayload(hid, md.size, enc);
     gettimeofday(&uend,NULL);
 
     timersub(&uend,&ustart,&udiff);
     float zdiff = (float) udiff.tv_sec + ((float)udiff.tv_usec/1000000);
     if (verbose)
-        fprintf(stdout,"INFO: Received %d bytes in %.2f seconds @ %.2f bps [%c]\n",
-                md.size, zdiff, md.size/zdiff, *fileBuf);
-    syslog(LOG_LOCAL7|LOG_INFO,"  Received %d bytes in %.2f seconds @ %.2f bps",
-                md.size, zdiff, md.size/zdiff);
+        fprintf(stdout,"INFO: Received %d bytes in %.2f seconds @ %.2f bps, mask=%s\n",
+                md.size, zdiff, md.size/zdiff, showLEDs(enc.mask));
 
     /* Check CRC and write file */
     crc = rc_crc32(0, fileBuf, md.size);
-    if (crc == md.crc) {
-        writeContents(md, fileBuf, outdir, FLAGNONE);
-    } else {
+    if (crc != md.crc) {
         fprintf(stderr, "WARN: CRC mismatch: 0x%x != 0x%x\n", crc, md.crc);
-        syslog(LOG_LOCAL7|LOG_WARNING,"  > CRC mismatch: 0x%x", crc);
-        writeContents(md, fileBuf, outdir, FLAGCRC);
+        syslog(LOG_LOCAL7|LOG_WARNING," CRC mismatch: 0x%x", crc);
     }
-    if (verbose) showFileData(fileBuf, md.size);
+
+    char *stamp = mkStamp(md,showLEDs(enc.mask),(crc==md.crc)?"bin":"crc");
+    char *newname = newFileName( outdir, stamp );
+    writeContents(md, fileBuf, newname);
+    syslog(LOG_LOCAL7|LOG_NOTICE,"> %s [%d: %.2fs @ %.2fbps]",
+                                stamp, md.delay, zdiff, md.size/zdiff);
+    if (verbose>=4) showFileData(fileBuf, md.size);
 
     /* Cleanup */
+    free(newname);
+    free(stamp);
     free(fileBuf);
 
     if (verbose) fprintf(stdout," === DONE ===\n\n");
@@ -175,6 +121,9 @@ void loop( FILE *hid, char *outdir )
 
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------
+ * Daemonise
+ */
 void goDark()
 {
     pid_t pid = 0;
@@ -182,30 +131,25 @@ void goDark()
 
     // Create child process
     pid = fork();
-
-    // Indication of fork() failure
     if (pid < 0) {
         fprintf(stderr,"ERR: fork failed!\n");
-        exit(EXIT_FAILURE);     // Return failure in exit status
+        exit(EXIT_FAILURE);
     }
-
-    // PARENT PROCESS. Need to kill it.
     if (pid > 0) {
         fprintf(stdout,"spawned pid: %d \n", pid);
-        exit(EXIT_SUCCESS);     // return success in exit status
+        exit(EXIT_SUCCESS);
     }
-
-    // unmask the file mode
     umask(0);
-
-    //set new session
     sid = setsid();
-    if(sid < 0) {
-        exit(EXIT_FAILURE);     // Return failure
+    if (sid < 0) {
+        exit(EXIT_FAILURE);
     }
 
     // Change the current working directory to root.
-    chdir("/");
+    if (chdir("/")!=0) {
+        fprintf(stderr,"ERR: failed to chdir to \"/\" : %s", STRERR);
+        exit(EXIT_FAILURE);
+    }
 
     // Close or dup stdin, stdout and stderr
     int log;
@@ -224,7 +168,7 @@ void goDark()
 
 /* -------------------------------------------------------------------------- */
 
-void usage( char* progname )
+void usage( const char* progname )
 {
     fprintf(stderr, "Daemon to receive data from keyboard LEDs\n");
     fprintf(stderr, "  version: %s\n",REVISION);
@@ -248,16 +192,11 @@ void usage( char* progname )
         fprintf(stderr, "   DEFOUTDIR       : %s\n", DEFOUTDIR);
         fprintf(stderr, "   DEBUGLOG        : %s\n", DEBUGLOG);
         fprintf(stderr, "   DEBUG           : %d\n", DEBUG);
-#if DEBUG
-        fprintf(stderr, "   INITSTATE       : %s\n", showLEDstate(INITSTATE));
-        fprintf(stderr, "   __TYDMASK__     : %s\n", showLEDstate(__TYDMASK__));
-        fprintf(stderr, "   __SCROLL__      : %s\n", showLEDstate(__SCROLL__));
-        fprintf(stderr, "   __CAPITAL__     : %s\n", showLEDstate(__CAPITAL__));
-        fprintf(stderr, "   __NUMLOCK__     : %s\n", showLEDstate(__NUMLOCK__));
-#else
-        fprintf(stderr, "   INITSTATE       : %d\n", INITSTATE);
-        fprintf(stderr, "   TYDMASK         : %d\n", __TYDMASK__);
-#endif
+        fprintf(stderr, "   PARITY          : %s\n", showLEDs(PARITY));
+        fprintf(stderr, "   KANA            : %s\n", showLEDs(KANA));
+        fprintf(stderr, "   SCROLL          : %s\n", showLEDs(SCROLL));
+        fprintf(stderr, "   CAPITAL         : %s\n", showLEDs(CAPITAL));
+        fprintf(stderr, "   NUMLOCK         : %s\n", showLEDs(NUMLOCK));
         fprintf(stderr, "   MAGIX/MAGSZ     : %s %d\n", MAGIX, MAGSZ);
         fprintf(stderr, "\n");
     }
@@ -273,7 +212,7 @@ int main( int argc, char* argv[] )
     char *outdir = DEFOUTDIR;
     FILE *hid;
 
-    setvbuf (stdout, NULL, _IONBF, BUFSIZ);
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
     while ((opt = getopt(argc, argv, "h?F1o:v::")) != -1) {
         switch (opt) {
@@ -335,39 +274,24 @@ int main( int argc, char* argv[] )
     // -----------------
     // Open device
     // Device may not be immediately available on boot
-    // TODO: tweak the '#defines'; or just never stop?
-#define RETRIES 100
-#define TIMEOUT 5
     hid = fopen(devicename, "rb");
-    int tries = 0;
     while (hid == NULL) {
-        tries++;
         fprintf(stderr, "ERR: Error opening %s: %s", devicename, STRERR);
         syslog(LOG_LOCAL7|LOG_ERR,"Error opening %s: %s", devicename, STRERR);
-        if (tries >= RETRIES) {
-            fprintf(stderr, "ERR: Exceeded maxtries %d. Exitting.\n",RETRIES);
-        	syslog(LOG_LOCAL7|LOG_ERR,"Exceeded maxtries %d. Exitting.",RETRIES);
-            exit(EXIT_FAILURE);
-		}
-        else {
-            fprintf(stderr, "ERR: Retry %d of %d in %d seconds",tries,RETRIES,TIMEOUT);
-            syslog(LOG_LOCAL7|LOG_ERR,"Retry %d of %d in %d seconds",tries,RETRIES,TIMEOUT);
-        }
-        sleep(TIMEOUT);
+        sleep(RETRY_TIMEOUT);
         hid = fopen(devicename, "rb");
     }
-    syslog(LOG_LOCAL7|LOG_INFO,": Listen on %s", devicename);
+    syslog(LOG_LOCAL7|LOG_INFO,": Listening on %s", devicename);
 
     // -----------------
     // Check output location
     if (check_dir(outdir) != 0) {
-        fprintf(stderr, "ERR: Error opening %s: %s", devicename, STRERR);
+        fprintf(stderr, "ERR: Error opening %s: %s\n", devicename, STRERR);
         syslog(LOG_LOCAL7|LOG_ERR,"Error opening %s: %s", devicename, STRERR);
         exit(EXIT_FAILURE);
     }
     syslog(LOG_LOCAL7|LOG_INFO,": Output directory %s", outdir);
     if (verbose) fprintf(stdout,"Listen on %s\nOutput dir %s\n\n", devicename, outdir);
-
     if (verbose) syslog(LOG_LOCAL7|LOG_INFO,": Verbose output to %s",
                             foreground?"console":DEBUGLOG);
 
