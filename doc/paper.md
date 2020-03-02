@@ -239,15 +239,20 @@ booted.  Don't get them mixed up.
 
 ## Running the Implant
 
-```
-Usage: kbdexfil.exe [-h] [-v] [-t timer] <file>
-  version: 0.3.7
+``` Shell
+Usage: kbdexfil.exe [-h] [-v] [-e -01] [-t timer] <file>
+  version: 0.4.8
     -h          this help
     -v          verbose
     -t timer    milliseconds between flashes (1-999)
-                (default 20)
+                (default 2)
+    -e[012]     encoding selection
+                0 = tydbits (scroll+caps+num) (default)
+                1 = trybbles (trybbles+kana)
+                2 = unibit (scroll+kana)
     file        filename
 ```
+
 
 The only *tweakable* parameters is the `-t timer` setting.  This is the
 number of millisconds between flashing the LEDs.  There's not a linear
@@ -257,6 +262,9 @@ as a higher setting.  About the fastest transfer rate seems to be a
 little over 10 bytes per second.
 
 Without the `-v` verbose option, the implant will run silently.
+
+Different encodings can be selected with the `-e` parameter.  See below
+for more details on the encodings.  The unibit encoding is very flaky.
 
 If you run this with a bog-standard keyboard attached you will see lots
 of pretty flashing of the LEDs. Once it has run, it should return the
@@ -271,25 +279,30 @@ that it has the full complement of lights, so will flash them invisibly.
 ## Example usage
 
 ```
-> kbdexfil.exe -vv -t 2 test.txt
-timer: 2
+> kbdexfil.exe -vvv -e3 -t1 test.txt
 filename:       test.txt
-size:5, crc:0xde35e8ec
-   C  (0x43)    (1,0,0,3)  1 4 0 7
-   Q  (0x51)    (1,1,0,1)  1 5 0 5
-   C  (0x43)    (1,0,0,3)  1 4 0 7
-   Q  (0x51)    (1,1,0,1)  1 5 0 5
-   _  (0x05)    (0,0,1,1)  0 4 1 5
-   _  (0x00)    (0,0,0,0)  0 4 0 4
-   _  (0xec)    (3,2,3,0)  3 6 3 4
-   _  (0xe8)    (3,2,2,0)  3 6 2 4
-   5  (0x35)    (0,3,1,1)  0 7 1 5
-   _  (0xde)    (3,1,3,2)  3 5 3 6
-      (0x46)    (1,0,1,2)  1 4 1 6
-      (0x6e)    (1,2,3,2)  1 6 3 6
-      (0x6f)    (1,2,3,3)  1 6 3 7
-      (0x72)    (1,3,0,2)  1 7 0 6
-      (0x64)    (1,2,1,0)  1 6 1 4
+mask=10111 delay=1 size=5 crc=0x0xde35e8ec
+| 00000 | 10111 | 00000 | 10111 | 00000 | 10111 | 00000 | 10111 | init=10111
+>  C  (0x43)    | 00010 | 00100 | 00011 
+>  Q  (0x51)    | 00110 | 10000 | 00101 
+>  C  (0x43)    | 00010 | 00100 | 00011 
+>  Q  (0x51)    | 00110 | 10000 | 00101 
+>  _  (0xec)    | 10011 | 00111 | 00000 
+>  _  (0xe8)    | 10111 | 00010 | 00100 
+>  5  (0x35)    | 00001 | 10101 | 00001 
+>  _  (0xde)    | 10110 | 10011 | 00110 
+>  _  (0x05)    | 00000 | 00101 | 00001 
+>  _  (0000)    | 00100 | 00000 | 00100 
+>  _  (0x01)    | 00000 | 00100 | 00001 
+>  _  (0x17)    | 00100 | 10001 | 00111 
+>     (0x46)    | 00010 | 00101 | 00010 
+>     (0x6e)    | 00111 | 00011 | 00110 
+>     (0x6f)    | 00011 | 00111 | 00011 
+>     (0x72)    | 00111 | 10000 | 00110 
+>     (0x64)    | 00011 | 00101 | 00000 
+Headers:    12 bytes in 1 seconds @ 12.00 bps
+Payload:     5 bytes in 0 seconds @ 5.00 bps
+Total:      17 (12+5) bytes in 1 seconds @ 17.00 bps
 ```
 
 ## Running the Listener
@@ -297,7 +310,7 @@ size:5, crc:0xde35e8ec
 ```
 $ /usr/local/bin/kbdinfil -h
 Daemon to receive data from keyboard LEDs
-  version: 0.3.7
+  version: 0.4.8
 
 usage: ./kbdinfil [-hvF1] [-o dir] <device>
     -h          this help
@@ -329,38 +342,31 @@ The daemon is configured to use `LOCAL7` as the `syslog` facility.  The
 `rsyslog.d` config file directs it log to `/var/log/exfil.log`.
 
 ```
-18:45:20 kbdinfil: ====== Keyboard LED Listener v0.3.7 ======
-18:45:20 kbdinfil: : /usr/local/sbin/kbdinfil
-18:45:20 kbdinfil: : PID: 4805
-18:45:20 kbdinfil: : Listen on /dev/hidg0
-18:45:20 kbdinfil: : Output directory /var/exfil
-18:45:20 kbdinfil: : Verbose output to /var/exfil/debug.log
-18:45:20 kbdinfil: Awaiting new transmission
-18:48:28 kbdinfil:   Received CQ
-18:48:29 kbdinfil:   size=6+34  crc=0x14230cd2
-18:48:32 kbdinfil:   Received 34 bytes in 3.28 seconds @ 10.36 bps
-18:48:32 kbdinfil:   > CRC mismatch: 0x14238cd2
-18:48:32 kbdinfil: Wrote /var/exfil/1581752912-0x14230cd2-34b-CRC.bin
-18:48:32 kbdinfil: Awaiting new transmission
-18:53:42 kbdinfil:   Received CQ
-18:53:42 kbdinfil:   size=6+34  crc=0x644aa341
-18:53:45 kbdinfil:   Received 34 bytes in 3.02 seconds @ 11.27 bps
-18:53:45 kbdinfil: Wrote /var/exfil/1581753225-0x644aa341-34b-OK.bin
-18:53:45 kbdinfil: Awaiting new transmission
+22:09:50 kbdinfil: ====== Keyboard LED Listener v0.4.8 ======
+22:09:50 kbdinfil: : /usr/local/sbin/kbdinfil
+22:09:50 kbdinfil: : PID: 31341
+22:09:50 kbdinfil: : Listening on /dev/hidg0
+22:09:50 kbdinfil: : Output directory /var/exfil
+22:09:50 kbdinfil: : Verbose output to /var/exfil/debug.log
+22:11:44 kbdinfil: < mask=10111 delay=2 size=256 crc=0x0x3ce529f1
+22:12:04 kbdinfil: > 1582974724-0x3ce529f1-256b-10111.bin [2: 20.00s @ 12.80bps]
+22:12:07 kbdinfil: < mask=00111 delay=1 size=256 crc=0x0xc5ca6670
+22:12:26 kbdinfil:  CRC mismatch: 0x391dd44d
+22:12:26 kbdinfil: > 1582974746-0xc5ca6670-256b-00111.crc [1: 19.01s @ 13.47bps]
 ```
 
-As you can see from the `syslog` output, the files are stored
-`/var/exfil`.  They are timestamped and the *expected* CRC is also
-added to the name.  The *expected* CRC is what the implant sent in
-the frame metadata.  If the file fails to be received properly, viz
-it fails the CRC check, then the file is marked with `CRC`,
-otherwise it is `OK`.  And they are called `.bin`, because they are
-a binary stream and could contain anything.
+The incoming files are stored in `/var/exfil`.  They are timestamped and
+the *expected* CRC is also added to the name.  The *expected* CRC is
+what the implant sent in the frame metadata, as well as the expected
+file size.  The encoding ft was used in the transmission is also
+incorporated in to the filename. If the file fails to be received
+properly, viz it fails the CRC check, then the file gets ".crc" as an
+extension, otherwise they are called `.bin`.
 
-| Epoch         | CRC           | Size  | Status  | Extension |
-|---------------|---------------|-------|---------|-----------|
-| `1581753225`  | `0x644aa341`  | `34b` | `OK`    | `.bin`    |
-| `1581752912`  | `0x14238cd2`  | `34b` | `CRC`   | `.bin`    |
+| Epoch         | CRC           | Size    | Encoding  | Extension |
+|---------------|---------------|---------|-----------|-----------|
+| `1582974724`  | `0x3ce529f1`  | `256b`  | `10111`   | `.bin`    |
+| `1582974746`  | `0xc5ca6670`  | `256b`  | `00111`   | `.crc`    |
 
 ------
 
@@ -462,35 +468,95 @@ the flashes are only partially sent, the listener will wait until the
 hi-bit alternates before accepting the tydbit.  This is also why there
 is the timer delay in the implant.
 
+The error correction is not hugely robust.  Longer delays between
+flashes can help to give the OS time to send the full state change
+before the next one overwrites it.  As there is no feedback mechanism
+at this point from the listener to the implant, there is no way to
+signal that frames need to be resent.
+
+### The Kana Bit
+
+Also addressable on some Windows configurations is the Kana bit (and not
+sure why some do, and some don't, recognize it).  This will not appear
+to light up unless you have a physical keyboard with the LED.  It is the
+fifth bit in the LED bitmask.
+
+Ideally, this extra bit would make for a good alternating parity bit,
+but it seems that Windows won't send the change to the Kana bit unless
+the "normal" LED states are changed, so the Scroll Lock key is still
+used as the parity bit.
+
+The encoding looks roughly like `10*11`, where scroll lock is marked
+with a `*`, the `0` is a reserved empty bit, and the the `1`s are
+flashed.  A byte decomposes into three of these frames, where the third
+loses one bit.  This bit could have been used to stream the data
+bitwise, but byte boundaries make things easier (and that extra bit
+could be reused for error correcting).
+
+Given that the frame sends three bits instead of two per flash, there is
+some improvement in the transfer speed, although the rate is better
+modelled with a ratio of three flashes per byte compared to four.
+Furthermore, consideration needs to be taken to the average number of
+state changes between the frames, which is directly expressed in the
+number of keypresses that need to occur.  For the original tydbit,
+there is one keypress for the parity, and an average of one of the two
+tydbits needs to be changed, so there are 8 keypresses per byte.  The
+kana bit encoding has one keypress per parity, plus one-and-a-half
+keypresses per frame, averaging out to 7 1/2 keypresses per byte.  The
+kana encoding also wastes one bit.  Oddly enough, the kana encoding
+seems to be more reliable than the tydbit encoding, with a lower rate of
+uncorrected errors.
+
+A unibit encoding is also possible, which may make things stealthier.
+For instance, most laptops don't have a scroll lock key, sometimes a
+numlock, and, of course, never a kana key.  The unibit encoding is
+correspondigly much slower, requiring eight frames per byte, and is,
+indeed, about half as slow as the tydbit encoding, which requires four
+frames per byte.  The unibt encoding is also very flaky, having a very
+high uncorrected error rate.  The unibit encoding in the implant uses
+scroll for parity and kana for the data bit.
+
 ## Metadata
 
-The transmission starts by sending "`CQCQ`" which the listener uses as a
-mark to start receiving the data.  This is used by Morse Operators to
-signal "Attention".
+The transmission starts by sending a repeating signal of the *mask* of
+the encoding to be used.  The four bytes "`CQCQ`" are then used as a
+sanity check to validate that the chosen encoding is correct.  This is
+used by Morse Operators to signal "Attention".
 
 Some metadata is sent before the payload data:
 
-  - size of file (2 bytes)
   - CRC32 checksum (4 bytes)
-    + **Total** 6 bytes
+  - size of file (2 bytes)
+  - delay (1 byte)
+  - mask (1 byte)
+    + **Total** 8 bytes
 
-The maximum size of the frame is 65535 bytes (16-bit), but even at the
-fastest transfer speed that is going to take almost two hours to send.
-Better to break up the data into smaller chunks first before feeding it
-to the implant.
+The *CRC* is used to validate the payload got sent correctly.  The
+*delay* is the timer used by the implant; this is only for reference and
+padding, and might get changed.  The *mask* is resent as final check
+that the metadata has been all decoded correctly.
+
+The maximum size of the transfer is 65535 bytes (16-bit), but even at
+the fastest transfer speed that is going to take almost two hours to
+send.  Better to break up the data into smaller chunks first before
+feeding it to the implant.
 
 | Segment |Size   | Example             | Note
 |---------|:-----:|---------------------|----
 | Magic   | 4     | `43 51 43 51`       | `CQCQ`
-| Size    | 2     | `05 00`             | 5 bytes
 | CRC32   | 4     | `EC E8 35 DE`       | checksum of payload
+| Size    | 2     | `05 00`             | 5 bytes
+| Delay   | 1     | `01`                | 5 bytes
+| Mask    | 1     | `07`                | tydbit encoding
 | Payload | 1-255 | ...                 | . . . . .
 
-| Trybbles                                  |
+| Tydbits                                   |
 |:------------------------------------------|
 | `1 4 0 7 1 5 0 5 1 4 0 7 1 5 0 5`         |
-| `0 4 1 5 0 4 0 4`                         |
 | `3 6 3 4 3 6 2 4 0 7 1 5 3 5 3 6`         |
+| `0 4 1 5 0 4 0 4`                         |
+| `0 4 0 5`                                 |
+| `0 4 1 7`                                 |
 | `1 4 1 6 1 6 3 6 1 6 3 7 1 7 0 6 1 6 1 4` |
 
 ## Some References
