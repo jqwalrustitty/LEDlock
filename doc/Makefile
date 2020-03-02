@@ -35,7 +35,7 @@ clean:
 # --------------------------------------
 
 .PHONY: slides
-slides: slides.pdf speaker.pdf morse
+slides: slides.pdf
 slides.pdf: slides.md
 	pandoc -s $(BEAMEROPTS) -o $@ $<
 
