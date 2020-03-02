@@ -16,22 +16,28 @@ Start with the docs.
 - A Raspberry Pi Zero
 - mingw32
 - pandoc (for the docs)
-  - again, start with the docs
   - unapologetically, pandoc markdown
 
 ## TODOs
 
 Higher priority:
-- error-correction and/or synchronous and/or race conditions
-- cq detection (cq0 and lastTrybble/INITSTATE)
-- cleanup verbosity and debugging
+- error-correction
+- race conditions and/or timings
+- improve encoding detection (cq and lastTrybble)
 - general bugfixes
+- guarantees on init of LED state
 
 Lesser priority:
-- streamline implant vs daemon dependencies
-- daemon signal handling
+- `make test package install`
 - file-less implant
-- remove IPv4 from Pi build (because!)
+- cleanup verbosity and debugging
+- split implant vs daemon dependencies
+- daemon signal handling
+- write out raw hidg0 stream to file
+
+Wish list:
+- fully generic arbitrary encodings
+- other usb-otg device emulation
 
 ## Licencing
 
